@@ -10,14 +10,14 @@ https://www.qgistutorials.com/en/docs/3/multi_criteria_overlay.html
 此次STUDIO將透過database的真實環境數據去分析研究我想探討的議題，透過衛星遙測地表的溫度，都市鋪面與行道樹的分布以及真實大眾慢跑路徑的紀錄，去分析慢跑路徑大致的地表體感舒適度。
 
 ## 2. Structure
-![alt text](STRUCTURE.png)
+![alt text](img/STRUCTURE.png)
 ## 3. PROCESS
 ### (1) DATA COLLECTION
 #### *JOGGING PATH* 
 ##### ACCESS TOKEN
 ![alt text](img/1.png)
 ![alt text](img/2.png)
-![alt text](3.png)
+![alt text](img/3.png)
 首先，我從STRAVA API取得慢跑路徑的資料，經過一番搜索後，比較可惜的是只能取得路徑的地理資訊，無法取得跟個人有關的任何資料，像是甚麼時間跑的等等。要向STRAVA API索取資訊，首先需要ACCESS TOKEN，必須先註冊STAVA的會員，設定好自己的API應用程式後，得到client id，透過同意授權相關資料後，會得到一組code，回傳至設定好的POSTMAN裡，就可以開始搜尋STRAVA上的慢跑資訊。
 
 ---
@@ -117,28 +117,28 @@ except Exception as e:
     print(f"Error saving file: {e}")
 
 ```
-![alt text](5.png)
-![alt text](6.png)
-![alt text](7.png)
-![alt text](8.png)
-![alt text](9.png)
+![alt text](img/5.png)
+![alt text](img/6.png)
+![alt text](img/7.png)
+![alt text](img/8.png)
+![alt text](img/9.png)
 因為我一次想要抓取大量的SEGMENT(慢跑路徑點位)，所以我使用GOOGLE CLAB幫我抓取以中心點半徑3公里範圍內的慢跑資料，然而後來我發現可能是經緯度換算的單位不夠精細，所以熱門路線需要透過自己將他們加入最愛路線，再透過starred segment去抓取。剛開始得到的每條路徑會是各自的一串路徑編碼，需要解碼才能將他們應用至QGIS上，然而QGIS需要整理好的CSV檔，因此在整串程式碼的最後，我將所有路徑的ID、點位順序以及經緯度都按照順序整理成CSV。將CSV匯入QGIS後，會用到REPROJECT LAYER、POINTS TO PATH、BUFFER、VECTOR TO RASTER(參考Pavement & Trees)等等的整理動作，以利後續計算綜合地表溫度圖的進行。
 
 ---
 
 #### *Surface Temperature*
 ##### LST 
-![alt text](10.png)
-![alt text](11.png)
-![alt text](12.png)
+![alt text](img/10.png)
+![alt text](img/11.png)
+![alt text](img/12.png)
 接下來要取得遙測地表溫度圖LST，我利用USGS EXPLORER提供的資訊去得到LST，其中的時間範圍與地理位置範圍可以自己決定，需要注意的是盡量選取雲層覆蓋較少的圖去作使用可以減少誤差。接著下載下來的圖還需要經過一層計算才能視覺化成我們常使用的溫度圖，這時可以使用QGIS裡的SCP插件，幫助快速得出我們需要的溫度圖。
 
 ---
 
 ##### Pavement & Trees
-![alt text](13.png)
-![alt text](14.png)
-![alt text](15.png)
+![alt text](img/13.png)
+![alt text](img/14.png)
+![alt text](img/15.png)
 從前一個步驟得到的地表溫度圖並不包含有街道尺度的精確度，因此在這裡加入鋪面因素與行道樹的分布，能夠更加真實的呈現地表溫度狀態，而這些數據可以從政府的公開數據去取得。將得到的鋪面與行道樹分布資訊匯入QGIS後，要將他們轉換成RASTER，並檢查他們是CRS是否相同。 
 -人行道(臺北市人行道固定設施物_人行道範圍圖)
 https://data.taipei/dataset/detail?id=715d3a83-8445-4496-b6bf-b0900538b7e7  
@@ -154,9 +154,9 @@ https://data.gov.tw/dataset/166231
 ---
 
 ### (2) Calculate
-![alt text](16.png)
-![alt text](17.png)
-![alt text](溫度計算底圖.png)
+![alt text](img/16.png)
+![alt text](img/17.png)
+![alt text](img/溫度計算底圖.png)
 將所有所有轉換成RASTER的LST、人行道分布圖、行道樹分布圖、透水鋪面、公園綠地進行加權計算。
 
 ---
@@ -198,7 +198,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-![alt text](平均溫度圖表.png)
+![alt text](img/平均溫度圖表.png)
 
 透過STRAVA API得到的慢跑路徑地理資訊，大致可以分成運動場、都市公園廣場、都市跨街人行道、河岸山地等等四個空間模式，以這四種空間模式去計算四個月份的綜合底表溫度圖，並將這四種空間模式的各月份溫度透過GIS去做平均溫度圖的計算。
 
@@ -262,6 +262,6 @@ for i in range(num_plots):
     plt.show()
 ```
 
-![alt text](馬拉松點位溫度圖表.png)
+![alt text](img/馬拉松點位溫度圖表.png)
 
 從STRAVA API得到的馬拉松路徑點位溫度圖，將其整理成折線圖表，以Y軸為溫度，X軸為每條馬拉松路徑點位的點位順序，顏色區分為四個月份去作分析，其中標記出相鄰點位溫度差距超過2°C以上的點位經緯度，以GIS的視覺化月份溫度分布圖，研究空間環境發生了何種變化導致溫度改變的發生，並思考路徑是否需要作出規畫改善。
